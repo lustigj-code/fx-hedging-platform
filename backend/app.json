@@ -1,0 +1,11 @@
+{
+  "name": "FX Hedging Backend",
+  "description": "Corporate FX hedging platform backend with Garman-Kohlhagen pricing",
+  "repository": "https://github.com/lustigj-code/fx-hedging-platform",
+  "keywords": ["fastapi", "python", "fx", "hedging", "options"],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ]
+}
