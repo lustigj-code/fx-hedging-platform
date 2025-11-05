@@ -39,7 +39,8 @@ class Settings(BaseSettings):
         "http://localhost:5173",
         "http://localhost:8080",
         "https://frontend-htjvjdcfu-lustigj-6781s-projects.vercel.app",
-        "https://frontend-u6qgr5e11-lustigj-6781s-projects.vercel.app",  # Current production frontend
+        "https://frontend-u6qgr5e11-lustigj-6781s-projects.vercel.app",
+        "https://frontend-qn7dh5bp9-lustigj-6781s-projects.vercel.app",  # Current production frontend
         "https://*.vercel.app",  # Allow all Vercel preview deployments
     ]
 
