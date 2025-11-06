@@ -28,10 +28,23 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS middleware
+# CORS middleware with dynamic origin checking for Vercel
+def cors_origin_checker(origin: str) -> bool:
+    """Check if origin is allowed (supports Vercel wildcard)."""
+    if origin in settings.CORS_ORIGINS:
+        return True
+    # Allow all Vercel app deployments
+    if origin.endswith(".vercel.app"):
+        return True
+    return False
+
+# Get allowed origins
+allowed_origins = settings.CORS_ORIGINS.copy()
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origin_regex=r"https://.*\.vercel\.app",
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
