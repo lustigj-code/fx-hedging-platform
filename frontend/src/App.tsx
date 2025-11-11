@@ -8,7 +8,6 @@ import {
   TrendingUp,
   Shield,
   DollarSign,
-  Activity,
   ArrowRight,
   Zap,
   Lock,
@@ -29,6 +28,7 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [protectionLevel, setProtectionLevel] = useState(0.05); // 5% default
   const [showWelcome, setShowWelcome] = useState(false);
+  const [calculatorMode, setCalculatorMode] = useState<'simple' | 'advanced'>('simple');
 
   // Check if first-time user
   useEffect(() => {
@@ -62,13 +62,16 @@ function App() {
       setLoading(true);
       setError(null);
 
+      // In simple mode, always use 5% protection level
+      const effectiveProtectionLevel = calculatorMode === 'simple' ? 0.05 : protectionLevel;
+
       const result = await apiClient.calculatePricingAuto({
         base: 'USD',
         quote: 'MXN',
         time_to_maturity_years: 0.25,
         notional_amount: 1000000,
         option_type: 'call',
-        protection_level: protectionLevel,
+        protection_level: effectiveProtectionLevel,
       });
 
       setPricingResult(result.data);
@@ -236,35 +239,13 @@ function App() {
                   </div>
                   <h3 className="text-lg font-semibold text-white mb-2">Instant Quotes</h3>
                   <p className="text-sm text-gray-400">
-                    Get pricing in seconds using institutional-grade Garman-Kohlhagen model.
+                    Get pricing in seconds using FX derivatives with real-time market data.
                     No waiting for quotes.
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Technology Stack */}
-            <div className="border border-gray-800 rounded-lg p-8 mb-16">
-              <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 rounded-lg bg-gray-900 flex items-center justify-center flex-shrink-0">
-                  <Activity className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-white mb-2">
-                    Garman-Kohlhagen Pricing Engine
-                  </h3>
-                  <p className="text-sm text-gray-400 mb-3">
-                    Our platform uses the industry-standard Garman-Kohlhagen formula for FX option
-                    pricing—the same model trusted by tier-1 investment banks worldwide and validated
-                    by decades of academic research in financial derivatives.
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Reference: Garman, M.B. and Kohlhagen, S.W. (1983) "Foreign Currency Option
-                    Values" Journal of International Money and Finance, 2, 231-237
-                  </p>
-                </div>
-              </div>
-            </div>
 
             {/* CTA */}
             <div className="text-center">
@@ -291,6 +272,32 @@ function App() {
                 <p className="text-gray-400">
                   See exactly what your FX protection will cost
                 </p>
+              </div>
+
+              {/* Mode Toggle */}
+              <div className="flex justify-center mb-8">
+                <div className="bg-gray-900 border border-gray-800 rounded-lg p-1 flex items-center">
+                  <button
+                    onClick={() => setCalculatorMode('simple')}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      calculatorMode === 'simple'
+                        ? 'bg-white text-black'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    Simple Mode
+                  </button>
+                  <button
+                    onClick={() => setCalculatorMode('advanced')}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      calculatorMode === 'advanced'
+                        ? 'bg-white text-black'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    Advanced Mode
+                  </button>
+                </div>
               </div>
 
               {/* Welcome Banner */}
@@ -361,39 +368,59 @@ function App() {
 
                 {/* Protection Level Slider */}
                 <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 mb-6">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-1">
-                      <label className="text-sm font-semibold text-white">
-                        Protection Level
-                      </label>
-                      <InfoTooltip {...tooltips.protectionLevel} />
+                  {calculatorMode === 'simple' ? (
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center space-x-1">
+                          <label className="text-sm font-semibold text-white">
+                            Protection Level
+                          </label>
+                          <InfoTooltip {...tooltips.protectionLevel} />
+                        </div>
+                        <span className="text-lg font-bold text-white">5% (Standard)</span>
+                      </div>
+                      <p className="text-xs text-gray-300 bg-black border border-gray-800 rounded p-3">
+                        <span className="font-semibold text-white">How it works:</span> We limit your maximum FX cost increase to 5%.
+                        If the current rate is 19.00 MXN per USD, you'll NEVER pay more than 19.95, no matter how high the market goes.
+                        Insurance covers all costs beyond this 5% threshold.
+                      </p>
                     </div>
-                    <span className="text-lg font-bold text-white">
-                      {(protectionLevel * 100).toFixed(1)}%
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="0.10"
-                    step="0.005"
-                    value={protectionLevel}
-                    onChange={(e) => setProtectionLevel(parseFloat(e.target.value))}
-                    className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-white hover:accent-gray-300"
-                  />
-                  <div className="flex justify-between mt-2">
-                    <span className="text-xs text-gray-500">0%</span>
-                    <span className="text-xs text-gray-500">2.5%</span>
-                    <span className="text-xs text-gray-500">5%</span>
-                    <span className="text-xs text-gray-500">7.5%</span>
-                    <span className="text-xs text-gray-500">10%</span>
-                  </div>
-                  <p className="text-xs text-gray-300 mt-4 bg-black border border-gray-800 rounded p-3">
-                    <span className="font-semibold text-white">How it works:</span> This sets your "safety buffer."
-                    If current rate is 19.00 and you pick 5%, your protection price becomes 19.95.
-                    You'll NEVER pay more than 19.95, no matter how high the market goes.
-                    Higher protection = more safety = higher upfront cost.
-                  </p>
+                  ) : (
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center space-x-1">
+                          <label className="text-sm font-semibold text-white">
+                            Protection Level
+                          </label>
+                          <InfoTooltip {...tooltips.protectionLevel} />
+                        </div>
+                        <span className="text-lg font-bold text-white">
+                          {(protectionLevel * 100).toFixed(1)}%
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="0.10"
+                        step="0.005"
+                        value={protectionLevel}
+                        onChange={(e) => setProtectionLevel(parseFloat(e.target.value))}
+                        className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-white hover:accent-gray-300"
+                      />
+                      <div className="flex justify-between mt-2">
+                        <span className="text-xs text-gray-500">0%</span>
+                        <span className="text-xs text-gray-500">2.5%</span>
+                        <span className="text-xs text-gray-500">5%</span>
+                        <span className="text-xs text-gray-500">7.5%</span>
+                        <span className="text-xs text-gray-500">10%</span>
+                      </div>
+                      <p className="text-xs text-gray-300 mt-4 bg-black border border-gray-800 rounded p-3">
+                        <span className="font-semibold text-white">How it works:</span> This is your maximum FX cost increase you're willing to accept.
+                        If current rate is 19.00 and you pick 5%, your protection price becomes 19.95.
+                        Insurance covers all costs beyond this threshold. Higher protection = more coverage = higher upfront cost.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <button
@@ -533,8 +560,94 @@ function App() {
                     </div>
                   </div>
 
-                  {/* Scenarios Table */}
-                  <div className="border border-gray-800 rounded-lg p-6 overflow-hidden">
+                  {/* Simple Mode: -10%/0%/+10% Scenario Cards */}
+                  {calculatorMode === 'simple' && (
+                    <div>
+                      <div className="border border-gray-800 rounded-lg p-6 mb-6">
+                        <h3 className="text-lg font-semibold text-white mb-2">What If The Dollar Moves?</h3>
+                        <p className="text-xs text-gray-400 mb-6">
+                          Your total cost (in MXN) at different exchange rates. Protected by your insurance at all times.
+                        </p>
+                        <div className="grid md:grid-cols-3 gap-4">
+                          {/* -10% Scenario */}
+                          {pricingResult.scenarios.length > 0 && (
+                            <>
+                              {(() => {
+                                const spotRate = 19.0; // Current rate
+                                const downRate = spotRate * 0.9; // -10%
+                                const neutralRate = spotRate;
+                                const upRate = spotRate * 1.1; // +10%
+
+                                // Find scenarios closest to our rates
+                                const findClosest = (rate: number) => {
+                                  return pricingResult.scenarios.reduce((closest, scenario) => {
+                                    const currentDiff = Math.abs(scenario.future_spot_rate - rate);
+                                    const closestDiff = Math.abs(closest.future_spot_rate - rate);
+                                    return currentDiff < closestDiff ? scenario : closest;
+                                  });
+                                };
+
+                                const downScenario = findClosest(downRate);
+                                const neutralScenario = findClosest(neutralRate);
+                                const upScenario = findClosest(upRate);
+
+                                return (
+                                  <>
+                                    {/* -10% Card */}
+                                    <div className="border border-red-900 rounded-lg p-4 bg-red-950">
+                                      <div className="flex items-baseline justify-between mb-2">
+                                        <p className="text-red-400 text-xs font-semibold">DOLLAR DROPS 10%</p>
+                                        <span className="text-red-400 text-xs font-semibold">↓</span>
+                                      </div>
+                                      <p className="text-gray-400 text-xs mb-2">Rate: {downScenario.future_spot_rate.toFixed(2)}</p>
+                                      <div className="text-2xl font-bold text-red-300 mb-1">
+                                        ${downScenario.net_cost.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                                      </div>
+                                      <p className="text-red-400 text-xs">Your cost (You benefit!)</p>
+                                    </div>
+
+                                    {/* Neutral Card */}
+                                    <div className="border border-gray-700 rounded-lg p-4 bg-gray-900">
+                                      <div className="flex items-baseline justify-between mb-2">
+                                        <p className="text-gray-400 text-xs font-semibold">NO CHANGE</p>
+                                        <span className="text-gray-400 text-xs font-semibold">→</span>
+                                      </div>
+                                      <p className="text-gray-400 text-xs mb-2">Rate: {neutralScenario.future_spot_rate.toFixed(2)}</p>
+                                      <div className="text-2xl font-bold text-white mb-1">
+                                        ${neutralScenario.net_cost.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                                      </div>
+                                      <p className="text-gray-400 text-xs">Your cost (Baseline)</p>
+                                    </div>
+
+                                    {/* +10% Card */}
+                                    <div className="border border-green-900 rounded-lg p-4 bg-green-950">
+                                      <div className="flex items-baseline justify-between mb-2">
+                                        <p className="text-green-400 text-xs font-semibold">DOLLAR RISES 10%</p>
+                                        <span className="text-green-400 text-xs font-semibold">↑</span>
+                                      </div>
+                                      <p className="text-gray-400 text-xs mb-2">Rate: {upScenario.future_spot_rate.toFixed(2)}</p>
+                                      <div className="text-2xl font-bold text-green-300 mb-1">
+                                        ${upScenario.net_cost.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                                      </div>
+                                      <p className="text-green-400 text-xs">Your cost (Protected!)</p>
+                                    </div>
+                                  </>
+                                );
+                              })()}
+                            </>
+                          )}
+                        </div>
+                        <p className="text-gray-500 text-xs mt-4 bg-black border border-gray-800 rounded p-3">
+                          <span className="font-semibold text-white">Why this matters:</span> Your insurance protects you from rising costs when the dollar appreciates (right card).
+                          When the dollar drops, you benefit from cheaper prices (left card). Either way, you know your maximum cost upfront.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Advanced Mode: Detailed Scenarios Table */}
+                  {calculatorMode === 'advanced' && (
+                    <div className="border border-gray-800 rounded-lg p-6 overflow-hidden">
                     <h3 className="text-lg font-semibold text-white mb-2">What-If Scenarios</h3>
                     <p className="text-xs text-gray-400 mb-4">
                       See how your protection performs if the exchange rate moves. Each row shows what happens at a different future rate.
@@ -619,6 +732,27 @@ function App() {
                       Green savings = your protection is working (market went up). Red = you didn't need the protection (market stayed low).
                       Either way, you had peace of mind knowing your maximum cost was capped.
                     </p>
+                    </div>
+                  )}
+
+                  {/* Fee Transparency Section */}
+                  <div className="border border-gray-800 rounded-lg p-6 mb-6 bg-gray-900">
+                    <h3 className="text-lg font-semibold text-white mb-3">How We Price Your Protection</h3>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-sm text-gray-300 mb-2">
+                          <span className="font-semibold text-white">Your upfront cost:</span> {(pricingResult.cost_percentage).toFixed(3)}% of transaction value
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          This is the option premium you pay once upfront for complete protection. Prices vary based on currency pair volatility and market conditions.
+                        </p>
+                      </div>
+                      <div className="border-t border-gray-700 pt-3">
+                        <p className="text-xs text-yellow-600 bg-yellow-950 border border-yellow-800 rounded p-2">
+                          <span className="font-semibold text-yellow-400">Volatility Caveat:</span> Pricing based on market volatility as of {new Date().toLocaleDateString()}. Fees may vary as volatility changes. Check for latest quotes.
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Risk Histogram - Monte Carlo Simulation */}
@@ -776,7 +910,7 @@ function App() {
             <div>
               <h4 className="font-semibold text-white text-sm mb-2">Technology</h4>
               <p className="text-gray-400 text-xs">
-                Powered by Garman-Kohlhagen option pricing model with real-time market data
+                Powered by institutional-grade FX derivatives pricing with real-time market data
               </p>
             </div>
             <div>

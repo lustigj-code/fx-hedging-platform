@@ -20,11 +20,11 @@ export const tooltips: Record<string, TooltipContent> = {
 
   protectionLevel: {
     term: 'Protection Level',
-    shortExplanation: 'How much exchange rate movement you want to protect against.',
+    shortExplanation: 'The maximum FX cost increase you are willing to accept. Insurance covers all costs beyond this threshold.',
     detailedExplanation:
-      'This sets how far above (for importers) or below (for exporters) the current rate you want your protection. Higher protection = more safety but higher upfront cost.',
+      'This defines your "safety buffer" as a percentage increase from today\'s exchange rate. Everything beyond this level is covered by your insurance. Higher protection = more coverage = higher upfront cost.',
     example:
-      'If the current rate is 19.00 and you choose 5% protection, your protection price will be 19.95 (19.00 × 1.05). This gives you a 5% buffer.',
+      'If the current rate is 19.00 MXN/USD and you choose 5% protection, your protection price becomes 19.95. Insurance covers everything above that rate. Your maximum FX cost increase is capped at 5%.',
     icon: 'info',
   },
 
