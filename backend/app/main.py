@@ -15,6 +15,27 @@ from app.database import init_db, close_db
 async def lifespan(app: FastAPI):
     # Startup
     await init_db()
+
+    # Auto-seed currencies on startup if database is empty
+    from app.database import get_db
+    from app.models.currency import Currency
+    from sqlalchemy import select
+
+    async for db in get_db():
+        # Check if currencies exist
+        result = await db.execute(select(Currency).limit(1))
+        currencies = result.scalars().first()
+
+        if not currencies:
+            # Database is empty, seed currencies
+            from app.routers.demo import seed_currencies_data
+            print("🌱 Auto-seeding currencies on startup...")
+            await seed_currencies_data(db)
+            print("✅ Currencies seeded successfully")
+        else:
+            print(f"✅ Database already has currencies, skipping auto-seed")
+        break
+
     yield
     # Shutdown
     await close_db()
